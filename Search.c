@@ -6,7 +6,7 @@
 
 // some constant values
 #define ArraySize 200
-#define NumberToSearch 1009
+#define NumberToSearch 1
 
 char *toString(int *, int);
 
@@ -65,13 +65,6 @@ int main(int argc, char *argv[])
 
     // scatter the array using MPI_Scatterv
     MPI_Scatterv(array, chunkSizes, chunkOffsets, MPI_INT, chunkArray, chunkSizes[rank], MPI_INT, 0, MPI_COMM_WORLD);
-    // search for the number
-    // but not rank 0
-    if (rank != 0)
-    {
-        // print the array of each process
-        printf("\nProcess %d has the array: { %s }\nProcess %d Searching for %d\n\n", rank, toString(chunkArray, chunkSizes[rank]), rank, NumberToSearch);
-    }
 
     // if the process is the master process
     if (rank == 0)
@@ -91,10 +84,13 @@ int main(int argc, char *argv[])
         }
     }
 
-    // bool found = true;
-    //  searching the number // receving abort signal from the master process
+    // search for the number
+    // but not rank 0
     if (rank != 0)
     {
+        // print the array of each process
+        printf("\nProcess %d has the array: { %s }\nProcess %d Searching for %d\n\n", rank, toString(chunkArray, chunkSizes[rank]), rank, NumberToSearch);
+
         int found = 0;
 
         for (int i = 0; i < chunkSizes[rank]; i++)
@@ -133,10 +129,6 @@ int main(int argc, char *argv[])
         if (found == 0)
         {
             printf("\nNot found by process %d\n", rank);
-
-            // sending nothing found
-            int index = -9;
-            MPI_Send(&index, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
         }
     }
 
