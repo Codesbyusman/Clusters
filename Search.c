@@ -5,8 +5,8 @@
 #include <mpi.h>
 
 // some constant values
-#define ArraySize 2
-#define NumberToSearch 1090
+#define ArraySize 200
+#define NumberToSearch 1009
 
 char *toString(int *, int);
 
@@ -76,22 +76,18 @@ int main(int argc, char *argv[])
     // if the process is the master process
     if (rank == 0)
     {
-
         // receive the index from the process that found the number
         int index = -1;
         MPI_Status status;
         MPI_Recv(&index, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
 
-        if (index != -1)
-        {
-            printf("\nMaster: Process %d found the number at index %d\nAll other processes should abort\n\n", status.MPI_SOURCE, index);
+        printf("\nMaster: Process %d found the number at index %d\nAll other processes should abort\n\n", status.MPI_SOURCE, index);
 
-            // send abort signal to all other processes
-            // the Mpi probe will be used to check if the process has received the abort signal
-            for (int i = 1; i < nprocs; i++)
-            {
-                MPI_Send(NULL, 0, MPI_INT, i, 1, MPI_COMM_WORLD);
-            }
+        // send abort signal to all other processes
+        // the Mpi probe will be used to check if the process has received the abort signal
+        for (int i = 1; i < nprocs; i++)
+        {
+            MPI_Send(NULL, 0, MPI_INT, i, 1, MPI_COMM_WORLD);
         }
     }
 
@@ -136,9 +132,11 @@ int main(int argc, char *argv[])
 
         if (found == 0)
         {
-            int i = -1;
             printf("\nNot found by process %d\n", rank);
-            MPI_Send(&i, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+
+            // sending nothing found
+            int index = -9;
+            MPI_Send(&index, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
         }
     }
 
@@ -147,8 +145,6 @@ int main(int argc, char *argv[])
     free(chunkSizes);
     free(chunkOffsets);
 
-    // all processes to do work
-    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
 
     return 0;
